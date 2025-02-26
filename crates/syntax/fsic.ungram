@@ -1,0 +1,11 @@
+Module =
+    FunctionDeclaration*
+
+FunctionDeclaration =
+    'fun' Ident '=' Expr
+
+Expr =
+    '(' ')'
+
+Ident =
+    '#ident_token'
