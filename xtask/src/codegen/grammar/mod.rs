@@ -392,15 +392,7 @@ fn generate_syntax_kinds(grammar: KindsSrc) -> String {
     let full_keywords_values = grammar.keywords;
     let full_keywords = full_keywords_values.iter().map(x);
 
-    let contextual_keywords_values = &grammar.contextual_keywords;
-    let contextual_keywords = contextual_keywords_values.iter().map(x);
-
-    let all_keywords_values = grammar
-        .keywords
-        .iter()
-        .chain(grammar.contextual_keywords.iter())
-        .copied()
-        .collect::<Vec<_>>();
+    let all_keywords_values = grammar.keywords.iter().copied().collect::<Vec<_>>();
     let all_keywords_idents = all_keywords_values.iter().map(|kw| format_ident!("{}", kw));
     let all_keywords = all_keywords_values.iter().map(x).collect::<Vec<_>>();
 
@@ -464,14 +456,6 @@ fn generate_syntax_kinds(grammar: KindsSrc) -> String {
             pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
                 let kw = match ident {
                     #(#full_keywords_values => #full_keywords,)*
-                    _ => return None,
-                };
-                Some(kw)
-            }
-
-            pub fn from_contextual_keyword(ident: &str) -> Option<SyntaxKind> {
-                let kw = match ident {
-                    #(#contextual_keywords_values => #contextual_keywords,)*
                     _ => return None,
                 };
                 Some(kw)
@@ -581,7 +565,6 @@ impl Field {
                     "&" => "amp",
                     "-" => "minus",
                     "." => "dot",
-                    "..." => "dotdotdot",
                     ":" => "colon",
                     "?" => "question_mark",
                     "," => "comma",
@@ -619,7 +602,7 @@ fn clean_token_name(name: &str) -> String {
 
 fn lower(grammar: &Grammar) -> AstSrc {
     let mut res = AstSrc {
-        tokens: "Whitespace Comment String IntNumber FloatNumber Char Ident"
+        tokens: "Whitespace Comment String FString IntNumber FloatNumber Char Ident"
             .split_ascii_whitespace()
             .map(|it| it.to_owned())
             .collect::<Vec<_>>(),
@@ -737,6 +720,7 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
         },
         Rule::Labeled { label: l, rule } => {
             assert!(label.is_none());
+            // TODO!
             let manually_implemented = matches!(
                 l.as_str(),
                 "lhs"
@@ -873,21 +857,21 @@ fn extract_enums(ast: &mut AstSrc) {
     }
 }
 
-fn extract_struct_traits(ast: &mut AstSrc) {
-    // TODO
-    let traits: &[(&str, &[&str])] = &[
-        ("HasAttrs", &["attrs"]),
-        ("HasName", &["name"]),
-        ("HasVisibility", &["visibility"]),
-        ("HasGenericParams", &["generic_param_list", "where_clause"]),
-        ("HasTypeBounds", &["type_bound_list", "colon_token"]),
-        ("HasModuleItem", &["items"]),
-        ("HasLoopBody", &["label", "loop_body"]),
-        ("HasArgList", &["arg_list"]),
-    ];
+// TODO
+const TRAITS: &[(&str, &[&str])] = &[
+    // ("HasAttrs", &["attrs"]),
+    // ("HasName", &["name"]),
+    // ("HasVisibility", &["visibility"]),
+    // ("HasGenericParams", &["generic_param_list", "where_clause"]),
+    // ("HasTypeBounds", &["type_bound_list", "colon_token"]),
+    // ("HasModuleItem", &["items"]),
+    // ("HasLoopBody", &["label", "loop_body"]),
+    // ("HasArgList", &["arg_list"]),
+];
 
+fn extract_struct_traits(ast: &mut AstSrc) {
     for node in &mut ast.nodes {
-        for (name, methods) in traits {
+        for (name, methods) in TRAITS {
             extract_struct_trait(node, name, methods);
         }
     }
@@ -945,4 +929,9 @@ impl AstNodeSrc {
             self.fields.remove(idx);
         });
     }
+}
+
+#[test]
+fn test() {
+    generate(true);
 }

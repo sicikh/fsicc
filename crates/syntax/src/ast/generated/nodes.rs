@@ -6,46 +6,243 @@ use crate::SyntaxKind::{self, *};
 use crate::{SyntaxNode, SyntaxToken, T};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Expr {
+pub struct AliasDecl {
     pub(crate) syntax: SyntaxNode,
 }
-impl Expr {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['(']) }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![')']) }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FunctionDeclaration {
-    pub(crate) syntax: SyntaxNode,
-}
-impl FunctionDeclaration {
-    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
-    pub fn ident(&self) -> Option<Ident> { support::child(&self.syntax) }
+impl AliasDecl {
+    pub fn constraint_list(&self) -> Option<ConstraintList> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn type_expr(&self) -> Option<TypeExpr> { support::child(&self.syntax) }
     pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
-    pub fn fun_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![fun]) }
+    pub fn alias_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![alias]) }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ident {
+pub struct Attr {
     pub(crate) syntax: SyntaxNode,
 }
-impl Ident {
-    pub fn ident_token_token(&self) -> Option<SyntaxToken> {
-        support::token(&self.syntax, T![ident_token])
+impl Attr {
+    pub fn ident_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ident]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AttrDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl AttrDecl {
+    pub fn attrs(&self) -> AstChildren<Attr> { support::children(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn attribute_token(&self) -> Option<SyntaxToken> {
+        support::token(&self.syntax, T![attribute])
     }
 }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClassDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ClassDecl {
+    pub fn constraint_list(&self) -> Option<ConstraintList> { support::child(&self.syntax) }
+    pub fn let_decls(&self) -> AstChildren<LetDecl> { support::children(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn type_expr(&self) -> Option<TypeExpr> { support::child(&self.syntax) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
+    pub fn class_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![class]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Constraint {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Constraint {
+    pub fn class(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn type_var(&self) -> Option<TypeVar> { support::child(&self.syntax) }
+    pub fn type_vars(&self) -> AstChildren<TypeVar> { support::children(&self.syntax) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ConstraintList {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ConstraintList {
+    pub fn constraints(&self) -> AstChildren<Constraint> { support::children(&self.syntax) }
+    pub fn l_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T!['[']) }
+    pub fn r_brack_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![']']) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Import {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Import {
+    pub fn attrs(&self) -> AstChildren<Attr> { support::children(&self.syntax) }
+    pub fn path(&self) -> Option<Path> { support::child(&self.syntax) }
+    pub fn import_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![import]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LetDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl LetDecl {
+    pub fn attrs(&self) -> AstChildren<Attr> { support::children(&self.syntax) }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
+    pub fn let_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![let]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LetExpr {
+    pub(crate) syntax: SyntaxNode,
+}
+impl LetExpr {
+    pub fn attrs(&self) -> AstChildren<Attr> { support::children(&self.syntax) }
+    pub fn expr(&self) -> Option<Expr> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
+    pub fn in_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![in]) }
+    pub fn let_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![let]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Literal {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Literal {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Module {
     pub(crate) syntax: SyntaxNode,
 }
 impl Module {
-    pub fn function_declarations(&self) -> AstChildren<FunctionDeclaration> {
-        support::children(&self.syntax)
-    }
+    pub fn module_decls(&self) -> AstChildren<ModuleDecl> { support::children(&self.syntax) }
+    pub fn preamble(&self) -> Option<ModulePreamble> { support::child(&self.syntax) }
 }
-impl AstNode for Expr {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == EXPR }
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModulePreamble {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ModulePreamble {
+    pub fn path(&self) -> Option<Path> { support::child(&self.syntax) }
+    pub fn module_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![module]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Name {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Name {
+    pub fn ident_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ident]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct NestedModule {
+    pub(crate) syntax: SyntaxNode,
+}
+impl NestedModule {
+    pub fn attrs(&self) -> AstChildren<Attr> { support::children(&self.syntax) }
+    pub fn module_decls(&self) -> AstChildren<ModuleDecl> { support::children(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn eq_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![=]) }
+    pub fn module_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![module]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Path {
+    pub(crate) syntax: SyntaxNode,
+}
+impl Path {
+    pub fn qualifier(&self) -> Option<Path> { support::child(&self.syntax) }
+    pub fn segment(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn dot_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![.]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeExpr {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeExpr {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn type_expr(&self) -> Option<TypeExpr> { support::child(&self.syntax) }
+    pub fn arrow_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![->]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeVar {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypeVar {
+    pub fn ident_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![ident]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypesDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl TypesDecl {
+    pub fn type_decls(&self) -> AstChildren<TypeDecl> { support::children(&self.syntax) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct UnionDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl UnionDecl {
+    pub fn cases(&self) -> AstChildren<Name> { support::children(&self.syntax) }
+    pub fn constraint_list(&self) -> Option<ConstraintList> { support::child(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn of_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![of]) }
+    pub fn union_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![union]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ValueDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ValueDecl {
+    pub fn constraint_list(&self) -> Option<ConstraintList> { support::child(&self.syntax) }
+    pub fn fields(&self) -> AstChildren<ValueFieldDecl> { support::children(&self.syntax) }
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn of_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![of]) }
+    pub fn value_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![value]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ValueFieldDecl {
+    pub(crate) syntax: SyntaxNode,
+}
+impl ValueFieldDecl {
+    pub fn name(&self) -> Option<Name> { support::child(&self.syntax) }
+    pub fn type_expr(&self) -> Option<TypeExpr> { support::child(&self.syntax) }
+    pub fn colon_token(&self) -> Option<SyntaxToken> { support::token(&self.syntax, T![:]) }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Expr {
+    LetExpr(LetExpr),
+    Literal(Literal),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ModuleDecl {
+    AttrDecl(AttrDecl),
+    ClassDecl(ClassDecl),
+    Import(Import),
+    LetDecl(LetDecl),
+    NestedModule(NestedModule),
+    TypesDecl(TypesDecl),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TypeDecl {
+    AliasDecl(AliasDecl),
+    UnionDecl(UnionDecl),
+    ValueDecl(ValueDecl),
+}
+impl AstNode for AliasDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ALIAS_DECL }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -55,8 +252,8 @@ impl AstNode for Expr {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for FunctionDeclaration {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == FUNCTION_DECLARATION }
+impl AstNode for Attr {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ATTR }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -66,8 +263,85 @@ impl AstNode for FunctionDeclaration {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
-impl AstNode for Ident {
-    fn can_cast(kind: SyntaxKind) -> bool { kind == IDENT }
+impl AstNode for AttrDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == ATTR_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for ClassDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == CLASS_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for Constraint {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == CONSTRAINT }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for ConstraintList {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == CONSTRAINT_LIST }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for Import {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == IMPORT }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for LetDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == LET_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for LetExpr {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == LET_EXPR }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for Literal {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == LITERAL }
     fn cast(syntax: SyntaxNode) -> Option<Self> {
         if Self::can_cast(syntax.kind()) {
             Some(Self { syntax })
@@ -88,22 +362,331 @@ impl AstNode for Module {
     }
     fn syntax(&self) -> &SyntaxNode { &self.syntax }
 }
+impl AstNode for ModulePreamble {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == MODULE_PREAMBLE }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for Name {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == NAME }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for NestedModule {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == NESTED_MODULE }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for Path {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == PATH }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypeExpr {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_EXPR }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypeVar {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPE_VAR }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for TypesDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == TYPES_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for UnionDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == UNION_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for ValueDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == VALUE_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl AstNode for ValueFieldDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { kind == VALUE_FIELD_DECL }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        if Self::can_cast(syntax.kind()) {
+            Some(Self { syntax })
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode { &self.syntax }
+}
+impl From<LetExpr> for Expr {
+    fn from(node: LetExpr) -> Expr { Expr::LetExpr(node) }
+}
+impl From<Literal> for Expr {
+    fn from(node: Literal) -> Expr { Expr::Literal(node) }
+}
+impl AstNode for Expr {
+    fn can_cast(kind: SyntaxKind) -> bool { matches!(kind, LET_EXPR | LITERAL) }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            LET_EXPR => Expr::LetExpr(LetExpr { syntax }),
+            LITERAL => Expr::Literal(Literal { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            Expr::LetExpr(it) => &it.syntax,
+            Expr::Literal(it) => &it.syntax,
+        }
+    }
+}
+impl From<AttrDecl> for ModuleDecl {
+    fn from(node: AttrDecl) -> ModuleDecl { ModuleDecl::AttrDecl(node) }
+}
+impl From<ClassDecl> for ModuleDecl {
+    fn from(node: ClassDecl) -> ModuleDecl { ModuleDecl::ClassDecl(node) }
+}
+impl From<Import> for ModuleDecl {
+    fn from(node: Import) -> ModuleDecl { ModuleDecl::Import(node) }
+}
+impl From<LetDecl> for ModuleDecl {
+    fn from(node: LetDecl) -> ModuleDecl { ModuleDecl::LetDecl(node) }
+}
+impl From<NestedModule> for ModuleDecl {
+    fn from(node: NestedModule) -> ModuleDecl { ModuleDecl::NestedModule(node) }
+}
+impl From<TypesDecl> for ModuleDecl {
+    fn from(node: TypesDecl) -> ModuleDecl { ModuleDecl::TypesDecl(node) }
+}
+impl AstNode for ModuleDecl {
+    fn can_cast(kind: SyntaxKind) -> bool {
+        matches!(
+            kind,
+            ATTR_DECL | CLASS_DECL | IMPORT | LET_DECL | NESTED_MODULE | TYPES_DECL
+        )
+    }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            ATTR_DECL => ModuleDecl::AttrDecl(AttrDecl { syntax }),
+            CLASS_DECL => ModuleDecl::ClassDecl(ClassDecl { syntax }),
+            IMPORT => ModuleDecl::Import(Import { syntax }),
+            LET_DECL => ModuleDecl::LetDecl(LetDecl { syntax }),
+            NESTED_MODULE => ModuleDecl::NestedModule(NestedModule { syntax }),
+            TYPES_DECL => ModuleDecl::TypesDecl(TypesDecl { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            ModuleDecl::AttrDecl(it) => &it.syntax,
+            ModuleDecl::ClassDecl(it) => &it.syntax,
+            ModuleDecl::Import(it) => &it.syntax,
+            ModuleDecl::LetDecl(it) => &it.syntax,
+            ModuleDecl::NestedModule(it) => &it.syntax,
+            ModuleDecl::TypesDecl(it) => &it.syntax,
+        }
+    }
+}
+impl From<AliasDecl> for TypeDecl {
+    fn from(node: AliasDecl) -> TypeDecl { TypeDecl::AliasDecl(node) }
+}
+impl From<UnionDecl> for TypeDecl {
+    fn from(node: UnionDecl) -> TypeDecl { TypeDecl::UnionDecl(node) }
+}
+impl From<ValueDecl> for TypeDecl {
+    fn from(node: ValueDecl) -> TypeDecl { TypeDecl::ValueDecl(node) }
+}
+impl AstNode for TypeDecl {
+    fn can_cast(kind: SyntaxKind) -> bool { matches!(kind, ALIAS_DECL | UNION_DECL | VALUE_DECL) }
+    fn cast(syntax: SyntaxNode) -> Option<Self> {
+        let res = match syntax.kind() {
+            ALIAS_DECL => TypeDecl::AliasDecl(AliasDecl { syntax }),
+            UNION_DECL => TypeDecl::UnionDecl(UnionDecl { syntax }),
+            VALUE_DECL => TypeDecl::ValueDecl(ValueDecl { syntax }),
+            _ => return None,
+        };
+        Some(res)
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            TypeDecl::AliasDecl(it) => &it.syntax,
+            TypeDecl::UnionDecl(it) => &it.syntax,
+            TypeDecl::ValueDecl(it) => &it.syntax,
+        }
+    }
+}
 impl std::fmt::Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for FunctionDeclaration {
+impl std::fmt::Display for ModuleDecl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
-impl std::fmt::Display for Ident {
+impl std::fmt::Display for TypeDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AliasDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Attr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for AttrDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ClassDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Constraint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ConstraintList {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Import {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for LetDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for LetExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }
 }
 impl std::fmt::Display for Module {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ModulePreamble {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Name {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for NestedModule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for Path {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypeVar {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for TypesDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for UnionDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ValueDecl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(self.syntax(), f)
+    }
+}
+impl std::fmt::Display for ValueFieldDecl {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Display::fmt(self.syntax(), f)
     }

@@ -1,11 +1,87 @@
-Module =
-    FunctionDeclaration*
+Name =
+    '#ident'
 
-FunctionDeclaration =
-    'fun' Ident '=' Expr
+Attr =
+    '#ident'
+
+TypeVar =
+    '#ident'
+
+Path =
+  (qualifier:Path '.')? segment:Name
+
+ConstraintList =
+     '[' constraints:(Constraint (',' Constraint)* ','?)? ']'
+
+Constraint =
+    class:Name TypeVar TypeVar*
+
+TypeExpr =
+    Name
+|   TypeExpr '->' TypeExpr
+
+
+Module =
+    preamble:ModulePreamble? ModuleDecl*
+
+ModulePreamble =
+    'module' Path
+
+ModuleDecl =
+    NestedModule
+|   LetDecl
+|   Import
+|   AttrDecl
+|   ClassDecl
+|   TypesDecl
+
+TypesDecl =
+    TypeDecl ('and' TypeDecl)*
+
+TypeDecl =
+    UnionDecl
+|   ValueDecl
+|   AliasDecl
+
+UnionDecl =
+    'union' Name ConstraintList? 'of' cases:(Name (',' Name)*)
+
+ValueDecl =
+    'value' Name (ConstraintList? 'of' fields:(ValueFieldDecl ('*' ValueFieldDecl)*))?
+
+ValueFieldDecl =
+    Name ':' TypeExpr
+
+AliasDecl =
+    'alias' Name ConstraintList? '=' TypeExpr
+
+LetDecl =
+    Attr* 'let' Name ('=' Expr)?
+
+NestedModule =
+    Attr* 'module' Name '=' ModuleDecl*
+
+Import =
+    Attr* 'import' Path
+
+AttrDecl =
+    Attr* 'attribute' Name
+
+ClassDecl =
+    'class' Name ConstraintList? TypeExpr '=' LetDecl*
 
 Expr =
-    '(' ')'
+    LetExpr
+|   Literal
 
-Ident =
-    '#ident_token'
+LetExpr =
+    Attr* 'let' Name '=' Expr 'in' Expr
+
+Literal =
+    value:(
+        '@int_number' | '@float_number'
+    |   '@string' | '@f_string' | '@char'
+    |   'true' | 'false'
+    )
+
+

@@ -9,53 +9,120 @@ pub enum SyntaxKind {
     TOMBSTONE,
     #[doc(hidden)]
     EOF,
-    DOLLAR,
-    L_PAREN,
-    R_PAREN,
+    COMMA,
+    L_BRACKET,
+    R_BRACKET,
+    STAR,
+    DOT,
+    COLON,
     EQ,
-    FUN_KW,
+    ARROW,
+    ALIAS_KW,
+    AND_KW,
+    ATTRIBUTE_KW,
+    CLASS_KW,
+    FALSE_KW,
+    IMPORT_KW,
+    IN_KW,
+    LET_KW,
+    MODULE_KW,
+    OF_KW,
+    TRUE_KW,
+    UNION_KW,
+    VALUE_KW,
+    CHAR,
+    FLOAT_NUMBER,
+    F_STRING,
+    INT_NUMBER,
+    STRING,
     COMMENT,
     ERROR,
-    IDENT_TOKEN,
+    IDENT,
     NEWLINE,
     WHITESPACE,
+    ALIAS_DECL,
+    ATTR,
+    ATTR_DECL,
+    CLASS_DECL,
+    CONSTRAINT,
+    CONSTRAINT_LIST,
     EXPR,
-    FUNCTION_DECLARATION,
-    IDENT,
+    IMPORT,
+    LET_DECL,
+    LET_EXPR,
+    LITERAL,
     MODULE,
+    MODULE_DECL,
+    MODULE_PREAMBLE,
+    NAME,
+    NESTED_MODULE,
+    PATH,
+    TYPES_DECL,
+    TYPE_DECL,
+    TYPE_EXPR,
+    TYPE_VAR,
+    UNION_DECL,
+    VALUE_DECL,
+    VALUE_FIELD_DECL,
     #[doc(hidden)]
     __LAST,
 }
 use self::SyntaxKind::*;
 impl SyntaxKind {
     pub fn is_keyword(self) -> bool {
-        matches!(self, FUN_KW)
+        matches!(
+            self,
+            ALIAS_KW
+                | AND_KW
+                | ATTRIBUTE_KW
+                | CLASS_KW
+                | FALSE_KW
+                | IMPORT_KW
+                | IN_KW
+                | LET_KW
+                | MODULE_KW
+                | OF_KW
+                | TRUE_KW
+                | UNION_KW
+                | VALUE_KW
+        )
     }
     pub fn is_punct(self) -> bool {
-        matches!(self, DOLLAR | L_PAREN | R_PAREN | EQ)
+        matches!(
+            self,
+            COMMA | L_BRACKET | R_BRACKET | STAR | DOT | COLON | EQ | ARROW
+        )
     }
     pub fn is_literal(self) -> bool {
-        // matches!(self,)
-        todo!()
+        matches!(self, CHAR | FLOAT_NUMBER | F_STRING | INT_NUMBER | STRING)
     }
     pub fn from_keyword(ident: &str) -> Option<SyntaxKind> {
         let kw = match ident {
-            "fun" => FUN_KW,
-            _ => return None,
-        };
-        Some(kw)
-    }
-    pub fn from_contextual_keyword(ident: &str) -> Option<SyntaxKind> {
-        let kw = match ident {
+            "alias" => ALIAS_KW,
+            "and" => AND_KW,
+            "attribute" => ATTRIBUTE_KW,
+            "class" => CLASS_KW,
+            "false" => FALSE_KW,
+            "import" => IMPORT_KW,
+            "in" => IN_KW,
+            "let" => LET_KW,
+            "module" => MODULE_KW,
+            "of" => OF_KW,
+            "true" => TRUE_KW,
+            "union" => UNION_KW,
+            "value" => VALUE_KW,
             _ => return None,
         };
         Some(kw)
     }
     pub fn from_char(c: char) -> Option<SyntaxKind> {
         let tok = match c {
-            '$' => DOLLAR,
-            '(' => L_PAREN,
-            ')' => R_PAREN,
+            ',' => COMMA,
+            '[' => L_BRACKET,
+            ']' => R_BRACKET,
+            '*' => STAR,
+            '.' => DOT,
+            ':' => COLON,
             '=' => EQ,
             _ => return None,
         };
@@ -63,4 +130,4 @@ impl SyntaxKind {
     }
 }
 #[macro_export]
-macro_rules ! T { [$] => { $ crate :: SyntaxKind :: DOLLAR } ; ['('] => { $ crate :: SyntaxKind :: L_PAREN } ; [')'] => { $ crate :: SyntaxKind :: R_PAREN } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [fun] => { $ crate :: SyntaxKind :: FUN_KW } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; }
+macro_rules ! T { [,] => { $ crate :: SyntaxKind :: COMMA } ; ['['] => { $ crate :: SyntaxKind :: L_BRACKET } ; [']'] => { $ crate :: SyntaxKind :: R_BRACKET } ; [*] => { $ crate :: SyntaxKind :: STAR } ; [.] => { $ crate :: SyntaxKind :: DOT } ; [:] => { $ crate :: SyntaxKind :: COLON } ; [=] => { $ crate :: SyntaxKind :: EQ } ; [->] => { $ crate :: SyntaxKind :: ARROW } ; [alias] => { $ crate :: SyntaxKind :: ALIAS_KW } ; [and] => { $ crate :: SyntaxKind :: AND_KW } ; [attribute] => { $ crate :: SyntaxKind :: ATTRIBUTE_KW } ; [class] => { $ crate :: SyntaxKind :: CLASS_KW } ; [false] => { $ crate :: SyntaxKind :: FALSE_KW } ; [import] => { $ crate :: SyntaxKind :: IMPORT_KW } ; [in] => { $ crate :: SyntaxKind :: IN_KW } ; [let] => { $ crate :: SyntaxKind :: LET_KW } ; [module] => { $ crate :: SyntaxKind :: MODULE_KW } ; [of] => { $ crate :: SyntaxKind :: OF_KW } ; [true] => { $ crate :: SyntaxKind :: TRUE_KW } ; [union] => { $ crate :: SyntaxKind :: UNION_KW } ; [value] => { $ crate :: SyntaxKind :: VALUE_KW } ; [ident] => { $ crate :: SyntaxKind :: IDENT } ; }
