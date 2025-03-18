@@ -4,8 +4,11 @@ use std::marker::PhantomData;
 
 use either::Either;
 
-use crate::SyntaxKind;
-use crate::syntax_node::{SyntaxNode, SyntaxNodeChildren, SyntaxToken};
+pub use self::generated::{nodes::*, tokens::*};
+use crate::{
+    SyntaxKind,
+    syntax_node::{SyntaxNode, SyntaxNodeChildren, SyntaxToken},
+};
 
 /// The main trait to go from untyped `SyntaxNode`  to a typed ast. The
 /// conversion itself has zero runtime cost: ast and syntax nodes have exactly

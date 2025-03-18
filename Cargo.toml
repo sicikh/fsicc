@@ -22,3 +22,5 @@ salsa = "0.18.0"
 rustc-hash = "2.0.0"
 either = "1.14.0"
 parser = { path = "./crates/parser", package = "fsicc-parser" }
+lexer = { path = "./crates/lexer", package = "fsicc-lexer" }
+triomphe = "0.1.14"

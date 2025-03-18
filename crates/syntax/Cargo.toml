@@ -12,3 +12,4 @@ rustc-hash.workspace = true
 rowan = "0.16.1"
 parser.workspace = true
 either.workspace = true
+triomphe.workspace = true

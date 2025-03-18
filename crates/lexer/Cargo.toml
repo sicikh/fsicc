@@ -1,5 +1,5 @@
 [package]
-name = "fsicc-parser"
+name = "fsicc-lexer"
 version = "0.1.0"
 edition.workspace = true
 authors.workspace = true
@@ -7,5 +7,4 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
-lexer.workspace = true
-drop_bomb = "0.1.5"
+logos = "0.15.0"
