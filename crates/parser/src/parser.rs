@@ -117,8 +117,10 @@ impl<'t> Parser<'t> {
         false
     }
 
-    pub(crate) fn new_indent_block(&mut self) {
-        self.indentation_blocks.push(self.current().col);
+    pub(crate) fn new_indent_block(&mut self) -> u32 {
+        let col = self.current().col;
+        self.indentation_blocks.push(col);
+        col
     }
 
     pub(crate) fn drop_indent_block(&mut self) {

@@ -5,6 +5,19 @@ use crate::{
     parser::{Marker, Parser},
 };
 
+// fn test() {
+//     let mutex = std::sync::Mutex::new(10);
+//     let guard = mutex.lock().unwrap();
+//     if true {
+//         return None;
+//     }
+//     
+//     // ....
+// }
+
+// with_indent_block!(p.many_same(item))
+// let guard = mutex.lock().unwrap()
+
 pub(super) fn module_contents(p: &mut Parser<'_>) {
     p.new_indent_block();
 
@@ -42,7 +55,7 @@ fn let_(p: &mut Parser<'_>, m: Marker) {
 }
 
 fn module(p: &mut Parser<'_>, m: Marker) {
-    p.new_indent_block();
+    let block = p.new_indent_block();
     p.bump(T![module]);
 
     // TODO: >= relation for terminals' indentation??
@@ -50,9 +63,9 @@ fn module(p: &mut Parser<'_>, m: Marker) {
 
     p.expect(T![=]);
 
-    let (block, _) = p.get_current_indent_block();
-    if p.current().col < block {
+    if p.current().col <= block {
         p.error("module should contain at least one item");
+        m.complete(p, NESTED_MODULE);
         return;
     }
 
