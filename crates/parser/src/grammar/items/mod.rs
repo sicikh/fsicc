@@ -1,5 +1,5 @@
 use crate::{
-    SyntaxKind::{EOF, LET_DECL, NESTED_MODULE},
+    SyntaxKind::{EOF, LET_DECL, MODULE},
     T,
     grammar::name,
     parser::{Marker, Parser},
@@ -11,7 +11,7 @@ use crate::{
 //     if true {
 //         return None;
 //     }
-//     
+//
 //     // ....
 // }
 
@@ -65,12 +65,12 @@ fn module(p: &mut Parser<'_>, m: Marker) {
 
     if p.current().col <= block {
         p.error("module should contain at least one item");
-        m.complete(p, NESTED_MODULE);
+        m.complete(p, MODULE);
         return;
     }
 
     module_contents(p);
 
-    m.complete(p, NESTED_MODULE);
+    m.complete(p, MODULE);
     p.drop_indent_block();
 }

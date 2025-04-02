@@ -167,7 +167,7 @@ fn n_attached_trivias<'a>(
     trivias: impl Iterator<Item = (SyntaxKind, &'a str)>,
 ) -> usize {
     match kind {
-        LET_DECL | MODULE | CLASS_DECL => {
+        LET_DECL | MODULE | CLASS => {
             let mut res = 0;
             let mut trivias = trivias.enumerate().peekable();
 

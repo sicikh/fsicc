@@ -2,80 +2,151 @@ Name =
     '#ident'
 
 Attr =
-    '#ident'
+    '#attribute'
 
 TypeVar =
     '#ident'
 
 Path =
-  (qualifier:Path '.')? segment:Name
+  (qualifier:Path '.')? segment:PathSegment
+
+PathSegment =
+    Name TypeArgList?
+
+TypeArgList =
+    '[' type_args:(Type (',' Type)*)? ']'
 
 ConstraintList =
      '[' constraints:(Constraint (',' Constraint)* ','?)? ']'
 
 Constraint =
-    class:Name TypeVar TypeVar*
+    class:Path? type_vars:(TypeVar TypeVar*)
 
-TypeExpr =
-    Name
-|   TypeExpr '->' TypeExpr
+Operator =
+    '*'
 
+//*************************//
+//          Items          //
+//*************************//
 
-Module =
-    preamble:ModulePreamble? ModuleDecl*
+SourceFile =
+    Preamble? Item*
 
-ModulePreamble =
+Preamble =
     'module' Path
 
-ModuleDecl =
-    NestedModule
+Item =
+    Module
 |   LetDecl
 |   Import
-|   AttrDecl
-|   ClassDecl
-|   TypesDecl
+|   AttrDef
+|   Class
+|   AdtList
+|   Where
 
-TypesDecl =
-    TypeDecl ('and' TypeDecl)*
-
-TypeDecl =
-    UnionDecl
-|   ValueDecl
-|   AliasDecl
-
-UnionDecl =
-    'union' Name ConstraintList? 'of' cases:(Name (',' Name)*)
-
-ValueDecl =
-    'value' Name (ConstraintList? 'of' fields:(ValueFieldDecl ('*' ValueFieldDecl)*))?
-
-ValueFieldDecl =
-    Name ':' TypeExpr
-
-AliasDecl =
-    'alias' Name ConstraintList? '=' TypeExpr
+Module =
+    Attr* 'module' Name '=' Item*
 
 LetDecl =
-    Attr* 'let' Name ('=' Expr)?
+    Attr* 'let' 'rec'? LetOp? Pat ConstraintList? ParamList? (':' Type)? ('=' Expr)?
 
-NestedModule =
-    Attr* 'module' Name '=' ModuleDecl*
+LetOp =
+    '(' Operator ')'
+
+ParamList =
+    Param Param*
+
+Param =
+    Pat
+|  '(' Pat (':' Type)? ')'
 
 Import =
     Attr* 'import' Path
 
-AttrDecl =
+AttrDef =
     Attr* 'attribute' Name
 
-ClassDecl =
-    'class' Name ConstraintList? TypeExpr '=' LetDecl*
+Class =
+    Attr* 'class' Name ConstraintList? type_vars:(TypeVar TypeVar*) '=' functions:LetDecl*
+
+AdtList =
+    Adt ('and' Adt)*
+
+Adt =
+    Union
+|   Value
+|   Alias
+
+Union =
+    Attr* 'union' Name ConstraintList? '=' '|'? cases:(Path ('|' Path)*)
+
+Value =
+    Attr* 'value' Name ConstraintList? ('(' fields:(ValueField ('*' ValueField)*) ')')?
+
+ValueField =
+    (Name ':')? Type
+
+Alias =
+    Attr* 'alias' Name ConstraintList? '=' Type
+
+Where =
+    Attr* 'where' Name ConstraintList? Path '=' functions:LetDecl*
+
+//****************************//
+//        Expressions         //
+//****************************//
 
 Expr =
     LetExpr
+|   BinExpr
+|   UnaryExpr
+|   SeqExpr
+|   AscExpr
+|   ParenExpr
+|   TupleExpr
+|   AppExpr
+|   IfExpr
+|   MatchExpr
 |   Literal
 
 LetExpr =
-    Attr* 'let' Name '=' Expr 'in' Expr
+    LetDecl 'in'? body:Expr
+
+UnaryExpr =
+    op:Operator
+    Expr
+
+BinExpr =
+    lhs:Expr
+    op:Operator
+    rhs:Expr
+
+SeqExpr =
+    fst:Expr snd:Expr
+
+AscExpr =
+    Expr ':' Type
+
+ParenExpr =
+    '(' Expr ')'
+
+TupleExpr =
+    Expr (',' Expr)*
+
+AppExpr =
+    fun:Expr arg:Expr
+
+IfExpr =
+    'if' condition:Expr 'then' then_branch:Expr ('else' else_branch:Expr)?
+
+MatchExpr =
+    'match' Expr 'with' '|'? cases:(MatchCase ('|' MatchCase)*)
+
+MatchCase =
+    Pat guard:MatchGuard? '->' Expr
+
+MatchGuard =
+    'when' condition:Expr
 
 Literal =
     value:(
@@ -84,4 +155,84 @@ Literal =
     |   'true' | 'false'
     )
 
+//****************************//
+//           Types            //
+//****************************//
 
+Type =
+    PathType
+|   FnType
+|   TupleType
+|   ParenType
+|   ConstraintType
+|   InferType
+
+PathType =
+    Path
+
+FnType =
+    arg:Type '->' ret:Type
+
+TupleType =
+    fields:(Type ('*' Type)*)
+
+ParenType =
+    '(' Type ')'
+
+ConstraintType =
+    ConstraintList Type
+
+InferType =
+    '_'
+
+//************************//
+//        Patterns        //
+//************************//
+
+Pat =
+    ParenPat
+|   TuplePat
+|   ConsPat
+|   WildcardPat
+|   LiteralPat
+|   IdentPat
+|   RecordPat
+|   OrPat
+|   TupleValuePat
+|   AscPat
+
+ParenPat =
+    '(' Pat ')'
+
+TuplePat =
+    fields:(Pat (',' Pat)*)
+
+ConsPat =
+    head:Pat '::' rest:Pat
+
+WildcardPat =
+    '_'
+
+LiteralPat =
+    Literal
+
+IdentPat =
+    (Pat 'as')? Name
+
+RecordPat =
+    '{' fields:(RecordPatField (';' RecordPatField)* ';'?)? '}'
+
+RecordPatField =
+    (Name '=')? Pat
+
+// OnlyRecordPat =
+//    '{|' fields:(RecordPatField (',' RecordPatField)* ','?)? '|}'
+
+OrPat =
+    '|'? (Pat ('|' Pat)*)
+
+TupleValuePat =
+    Path '(' fields:(Pat (',' Pat)* ','?)? ')'
+
+AscPat =
+    Pat ':' Type

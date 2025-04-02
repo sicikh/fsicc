@@ -1,8 +1,10 @@
 mod ast_src;
 
-use std::collections::{BTreeSet, HashSet};
-use std::fmt::Write;
-use std::fs;
+use std::{
+    collections::{BTreeSet, HashSet},
+    fmt::Write,
+    fs,
+};
 
 use itertools::{Either, Itertools};
 use proc_macro2::{Punct, Spacing};
@@ -10,9 +12,10 @@ use quote::{format_ident, quote};
 use ungrammar::{Grammar, Rule};
 
 use self::ast_src::{AstEnumSrc, AstNodeSrc, AstSrc, Cardinality, Field, KindsSrc};
-use crate::codegen::grammar::ast_src::generate_kind_src;
-use crate::codegen::{add_preamble, ensure_file_contents, reformat};
-use crate::project_root;
+use crate::{
+    codegen::{add_preamble, ensure_file_contents, grammar::ast_src::generate_kind_src, reformat},
+    project_root,
+};
 
 pub(crate) fn generate(check: bool) {
     let grammar = fs::read_to_string(project_root().join("crates/syntax/fsic.ungram"))
@@ -377,6 +380,8 @@ fn generate_syntax_kinds(grammar: KindsSrc) -> String {
         if "{}[]()".contains(token) {
             let c = token.chars().next().unwrap();
             quote! { #c }
+        } else if *token == "_" {
+            quote! { _ }
         } else {
             let cs = token.chars().map(|c| Punct::new(c, Spacing::Joint));
             quote! { #(#cs)* }
@@ -392,7 +397,7 @@ fn generate_syntax_kinds(grammar: KindsSrc) -> String {
     let full_keywords_values = grammar.keywords;
     let full_keywords = full_keywords_values.iter().map(x);
 
-    let all_keywords_values = grammar.keywords.iter().copied().collect::<Vec<_>>();
+    let all_keywords_values = grammar.keywords.to_vec();
     let all_keywords_idents = all_keywords_values.iter().map(|kw| format_ident!("{}", kw));
     let all_keywords = all_keywords_values.iter().map(x).collect::<Vec<_>>();
 
@@ -564,8 +569,10 @@ impl Field {
                     "*" => "star",
                     "&" => "amp",
                     "-" => "minus",
+                    "_" => "underscore",
                     "." => "dot",
                     ":" => "colon",
+                    "::" => "colon2",
                     "?" => "question_mark",
                     "," => "comma",
                     "|" => "pipe",
@@ -677,7 +684,7 @@ fn lower_enum(grammar: &Grammar, rule: &Rule) -> Option<Vec<String>> {
 }
 
 fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, rule: &Rule) {
-    if lower_separated_list(acc, grammar, label, rule) {
+    if lower_list(acc, grammar, label, rule) {
         return;
     }
 
@@ -693,6 +700,9 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
             acc.push(field);
         },
         Rule::Token(token) => {
+            if label.is_some() {
+                println!("{label:?}")
+            }
             assert!(label.is_none());
             let mut name = clean_token_name(&grammar[*token].name);
             if "[]{}()".contains(&name) {
@@ -755,7 +765,8 @@ fn lower_rule(acc: &mut Vec<Field>, grammar: &Grammar, label: Option<&String>, r
 }
 
 // (T (',' T)* ','?)
-fn lower_separated_list(
+// (T T*)
+fn lower_list(
     acc: &mut Vec<Field>,
     grammar: &Grammar,
     label: Option<&String>,
@@ -766,7 +777,7 @@ fn lower_separated_list(
         _ => return false,
     };
 
-    let (nt, repeat, trailing_sep) = match rule.as_slice() {
+    let (nt, _repeat, _trailing_sep) = match rule.as_slice() {
         [Rule::Node(node), Rule::Rep(repeat), Rule::Opt(trailing_sep)] => {
             (Either::Left(node), repeat, Some(trailing_sep))
         },
@@ -779,21 +790,21 @@ fn lower_separated_list(
         [Rule::Token(token), Rule::Rep(repeat)] => (Either::Right(token), repeat, None),
         _ => return false,
     };
-    let repeat = match &**repeat {
-        Rule::Seq(it) => it,
-        _ => return false,
-    };
-    if !matches!(
-        repeat.as_slice(),
-        [comma, nt_]
-            if trailing_sep.is_none_or(|it| comma == &**it) && match (nt, nt_) {
-                (Either::Left(node), Rule::Node(nt_)) => node == nt_,
-                (Either::Right(token), Rule::Token(nt_)) => token == nt_,
-                _ => false,
-            }
-    ) {
-        return false;
-    }
+    // let repeat = match &**repeat {
+    //     Rule::Seq(it) => it,
+    //     _ => return false,
+    // };
+    // if !matches!(
+    //     repeat.as_slice(),
+    //     [comma, nt_]
+    //         if trailing_sep.is_none_or(|it| comma == &**it) && match (nt, nt_) {
+    //             (Either::Left(node), Rule::Node(nt_)) => node == nt_,
+    //             (Either::Right(token), Rule::Token(nt_)) => token == nt_,
+    //             _ => false,
+    //         }
+    // ) {
+    //     return false;
+    // }
     match nt {
         Either::Right(token) => {
             let name = clean_token_name(&grammar[*token].name);
